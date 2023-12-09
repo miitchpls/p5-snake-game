@@ -5,9 +5,9 @@ var swiper;
 
 var cols = 17 + 2;
 var rows = 17 + 2;
+var SCALE;
 
 // game const
-const SCALE = 30;
 const TICKS = 8;
 
 // possible directions

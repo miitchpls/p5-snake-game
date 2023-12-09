@@ -3,16 +3,34 @@ class Field {
   rows;
   cols;
   mapBorder = true;
+  containerID = "snake-field";
 
   constructor(rows, cols) {
     this.rows = rows;
     this.cols = cols;
     this.setupCanvas();
+
+    window.onresize = function () {
+      this.resizeCanvas()
+    }.bind(this);
+  }
+
+  getCanvasSize() {
+    let parent = document.getElementById(this.containerID);
+    return parent.offsetWidth > 570 ? 570 : parent.offsetWidth;
   }
 
   setupCanvas() {
-    canvas = createCanvas(cols * SCALE, rows * SCALE);
-    canvas.parent('snake-field');
+    let squareSize = this.getCanvasSize();
+    canvas = createCanvas(squareSize, squareSize);
+    SCALE = squareSize / rows;
+    canvas.parent(this.containerID);
+  }
+
+  resizeCanvas(evt) {
+    let squareSize = this.getCanvasSize();
+    SCALE = squareSize / rows;
+    canvas.size(squareSize, squareSize);
   }
 
   isInside(coords) {
@@ -62,7 +80,7 @@ class Field {
     }
   }
 
-  updateScore(score){
+  updateScore(score) {
     document.getElementById("score").innerHTML = score;
   }
 
