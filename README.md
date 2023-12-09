@@ -8,7 +8,7 @@ The project doesn't require any installation, you can just close the repository 
 
 ## Demo
 
-A demo can be found [here](https://www.miitchpls.it/snake/). 😊
+A demo can be found [here](https://miitchpls.github.io/p5-snake-game/). 😊
 
 ![snake](https://github.com/miitchpls/p5-snake-game/assets/51779074/fc323342-3218-4049-8dc0-2a028d73d916)
 
