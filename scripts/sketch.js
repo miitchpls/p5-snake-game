@@ -1,6 +1,7 @@
 var snake;
 var food;
 var field;
+var swiper;
 
 var cols = 17 + 2;
 var rows = 17 + 2;
@@ -22,12 +23,21 @@ function setup() {
   frameRate(TICKS);
 
   this.createMap();
+  this.setupGesture();
   this.createSnake();
   this.generateFood();
 }
 
 function createMap() {
   field = new Field(rows, cols);
+}
+
+function setupGesture() {
+	swiper = new Swipe('#snake-field');
+	swiper.onUp(() => onKey('w') );
+	swiper.onRight(()=> onKey('d'));
+	swiper.onDown(()=> onKey('s'));
+	swiper.onLeft(()=> onKey('a'));
 }
 
 function createSnake() {
@@ -69,7 +79,6 @@ function draw() {
 
     snake.update();
     
-
     if (snake.eat(food)) {
       generateFood();
     }
@@ -81,7 +90,11 @@ function draw() {
   food.draw();
 }
 
-function keyPressed() {
+function keyPressed(key) {
+  onKey(key.key); 
+}
+
+function onKey(key) {
   if(!gameRunning){
     gameRunning = true;
   }
