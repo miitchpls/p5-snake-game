@@ -62,10 +62,10 @@ class Snake {
     let actualDirection = this.getDirection();
 
     switch (toDirection) {
-      case UP: { if (actualDirection != DOWN) return true };
-      case DX: { if (actualDirection != SX) return true };
-      case DOWN: { if (actualDirection != UP) return true };
-      case SX: { if (actualDirection != DX) return true };
+      case UP: { return actualDirection != DOWN };
+      case DX: { return actualDirection != SX };
+      case DOWN: { return actualDirection != UP };
+      case SX: { return actualDirection != DX };
       default: return false;
     }
   }
