@@ -62,4 +62,8 @@ class Field {
     }
   }
 
+  updateScore(score){
+    document.getElementById("score").innerHTML = score;
+  }
+
 }

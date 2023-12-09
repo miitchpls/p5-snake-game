@@ -5,17 +5,22 @@ var field;
 var cols = 17 + 2;
 var rows = 17 + 2;
 
+// game const
 const SCALE = 30;
-const FRAMERATE = 8;
+const TICKS = 8;
 
-var lastKey;
+// possible directions
+const UP = "up";
+const DX = "dx";
+const SX = "sx";
+const DOWN = "down";
+
+var lastKey = null;
+var gameRunning = false;
 
 function setup() {
-  frameRate(FRAMERATE);
-  startGame();
-}
+  frameRate(TICKS);
 
-function startGame() {
   this.createMap();
   this.createSnake();
   this.generateFood();
@@ -30,30 +35,24 @@ function createSnake() {
 }
 
 function generateFood() {
-  let coords = this.getFreeSlot();
-  food = new Food(coords.x, coords.y);
+  let cell = this.getEmptyCell();
+  food = new Food(cell.x, cell.y);
 }
 
-function getFreeSlot() {
+function getEmptyCell() {
   do {
-
-    let randomCoords = {
+    let cell = {
       x: floor(random(cols)),
       y: floor(random(rows)),
     }
 
-    /** if is inside the field */
-    if (field.isInside(randomCoords)) {
+    if (!field.isInside(cell))
+      continue;
+  
+    let collideWithSnake = snake.isPositionOverTail(cell.x, cell.y);
 
-      /** and if is not above the snake */
-      if (snake.getTail().filter(
-        piece => { if (piece.x == randomCoords.x && piece.y == randomCoords.y) return piece }
-      ).length == 0) {
-        return {
-          x: randomCoords.x,
-          y: randomCoords.y,
-        }
-      }
+    if (!collideWithSnake) {
+      return cell;
     }
   } while (true);
 }
@@ -61,10 +60,10 @@ function getFreeSlot() {
 function draw() {
   field.draw();
 
-  if (snake.alive) {
+  if (gameRunning) {
     snake.setDirection(lastKey);
 
-    if (!field.isInside(snake.nextCoords())) {
+    if (!field.isInside(snake.getNextPosition())) {
       snake.kill();
     }
 
@@ -76,7 +75,6 @@ function draw() {
     }
   } else {
     this.lastKey = null;
-    snake.spawn();
   }
 
   snake.draw();
@@ -84,20 +82,26 @@ function draw() {
 }
 
 function keyPressed() {
-  snake.alive = true;
-  let key = String.fromCharCode(keyCode).toLocaleLowerCase();
-  if (keyCode == UP_ARROW || key == 'w') {
-    this.lastKey = 'up';
-  } else if (keyCode == RIGHT_ARROW || key == 'd') {
-    this.lastKey = 'dx';
-  } else if (keyCode == DOWN_ARROW || key == 's') {
-    this.lastKey = 'down';
-  } else if (keyCode == LEFT_ARROW || key == 'a') {
-    this.lastKey = 'sx';
+  if(!gameRunning){
+    gameRunning = true;
   }
-}
 
-function stop() {
-  var cnv = createCanvas(cols * SCALE, rows * SCALE);
-  background(0);
+  switch(key.toLowerCase()){
+    case "w":
+    case "arrowup": {
+      this.lastKey = UP;
+    } break;
+    case "a":
+    case "arrowleft": {
+      this.lastKey = SX;
+    } break;
+    case "s":
+    case "arrowdown": {
+      this.lastKey = DOWN;
+    } break;
+    case "d":
+    case "arrowright": {
+      this.lastKey = DX;
+    } break;
+  }
 }

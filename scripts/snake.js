@@ -1,37 +1,33 @@
-class Snake {
-  /** options */
-  alive;
-  trimOnSelfEat = true;
+/** multiplier to define how much progressively darker the snake must become each time it eats */
+const COLORAGINGMULTIPLIER = 1;
 
-  /** init values */
-  startlenght;
-  xStart;
-  yStart;
+class Snake {
+  startLenght;
 
   /** direction of snake */
-  xSpeed = 0;
-  ySpeed = 0;
+  xDirection = 0;
+  yDirection = 0;
 
-  /** array containing the body of the snake */
+  /** array of vectors containing the tail of the snake */
   tail = [];
 
-  /** define the jump bouding from the green 
-   * gradation of the pieces of the snake */
-  COLORBOUDING = 3;
-
-  constructor(x, y, startlenght = 3) {
-    this.startlenght = startlenght;
-    this.xStart = x;
-    this.yStart = y;
-    this.spawn();
+  /**
+   * @param {number} x the starting point on the x-axis
+   * @param {number} y the starting point on the y-axis
+   * @param {number} [startLenght=3] opzionale lunghezza inziiale coda
+   */
+  constructor(x, y, startLenght = 3) {
+    this.startLenght = startLenght;
+    this.spawn(x, y);
   }
 
-  spawn() {
+  spawn(x, y) {
     this.tail = [];
-    this.xSpeed = 0;
-    this.ySpeed = 0;
-    for (let i = 0; i < this.startlenght; i++) {
-      this.tail.push(createVector(this.xStart, this.yStart));
+    this.xDirection = 0;
+    this.yDirection = 0;
+
+    for (let i = 0; i < this.startLenght; i++) {
+      this.tail.push(createVector(x, y));
     }
   }
 
@@ -39,119 +35,84 @@ class Snake {
     return this.tail;
   }
 
-  nextCoords() {
+  kill() {
+    gameRunning = false;
+    snake = new Snake(3, 9);
+  }
+
+  getNextPosition() {
     return {
-      x: this.tail[0].x + this.xSpeed,
-      y: this.tail[0].y + this.ySpeed,
+      x: this.tail[0].x + this.xDirection,
+      y: this.tail[0].y + this.yDirection,
     }
   }
 
   setDirection(direction) {
-    if (this.canMove(direction)) {
-      switch (direction) {
-        case 'up': { this.xSpeed = 0; this.ySpeed = -1; } break;
-        case 'dx': { this.xSpeed = 1; this.ySpeed = 0; } break;
-        case 'down': { this.xSpeed = 0; this.ySpeed = 1; } break;
-        case 'sx': { this.xSpeed = -1; this.ySpeed = 0; } break;
-      }
+    if (!this.isPossibleDirection(direction)) return;
+
+    switch (direction) {
+      case UP: { this.xDirection = 0; this.yDirection = -1; } break;
+      case DX: { this.xDirection = 1; this.yDirection = 0; } break;
+      case DOWN: { this.xDirection = 0; this.yDirection = 1; } break;
+      case SX: { this.xDirection = -1; this.yDirection = 0; } break;
     }
   }
 
-  canMove(toDirection) {
+  isPossibleDirection(toDirection) {
     let actualDirection = this.getDirection();
+
     switch (toDirection) {
-      case 'up': { if (actualDirection != 'down') { return true } } break;
-      case 'dx': { if (actualDirection != 'sx') { return true } } break;
-      case 'down': { if (actualDirection != 'up') { return true } } break;
-      case 'sx': { if (actualDirection != 'dx') { return true } } break;
+      case UP: { if (actualDirection != DOWN) return true };
+      case DX: { if (actualDirection != SX) return true };
+      case DOWN: { if (actualDirection != UP) return true };
+      case SX: { if (actualDirection != DX) return true };
+      default: return false;
     }
-    return false;
   }
 
   getDirection() {
-    if (this.ySpeed == -1) { return 'up' }
-    else if (this.xSpeed == 1) { return 'dx' }
-    else if (this.ySpeed == 1) { return 'down' }
-    else if (this.xSpeed == -1) { return 'sx' }
+    if (this.yDirection == -1) { return UP }
+    else if (this.xDirection == 1) { return DX }
+    else if (this.yDirection == 1) { return DOWN }
+    else if (this.xDirection == -1) { return SX }
   }
 
   getScore() {
-    return this.tail.length - this.startlenght;
+    return this.tail.length - this.startLenght;
   }
 
   eat(food) {
-    if (food) {
-      if (dist(this.tail[0].x, this.tail[0].y, food.x, food.y) < 1) {
-        this.tail.push(createVector(this.tail[0].x, this.tail[0].y));
-        return true;
-      } else {
-        return false;
-      }
+    if (!food) return;
+
+    if (dist(this.tail[0].x, this.tail[0].y, food.x, food.y) < 1) {
+      let last = this.tail.at(-1);
+      this.tail.push(createVector(last.x, last.y));
+      field.updateScore(this.getScore());
+
+      return true;
+    } else {
+      return false;
     }
+
   }
 
   update() {
-    if (this.alive) {
-      for (let [index, piece] of this.tail.entries()) {
-        let antecedent = this.tail[index - 1];
-        let nextX;
-        let nextY;
-        /** if the piece doenst have an antecedent just increase his coords with
-         * the direction otherwise if has an antecednt replace his coords with 
-         * the previous one of the antecedent  */
-        if (!antecedent) {
-          nextX = piece.x + this.xSpeed;
-          nextY = piece.y + this.ySpeed;
-        } else {
-          nextX = antecedent.oldX;
-          nextY = antecedent.oldY;
-        }
-        /** saving the coords before increasing it for taking track of it */
-        piece.oldX = piece.x;
-        piece.oldY = piece.y;
+    if (!gameRunning) return;
 
-        if (index == 0) {
-          if (this.isValidMove(nextX, nextY)) {
-            /** assigning the new position to the piece */
-            piece.x = nextX;
-            piece.y = nextY;
-          } else {
-            /** killing the snake */
-            this.kill();
-          }
-        } else {
-          /** assigning the new position to the piece */
-          piece.x = nextX;
-          piece.y = nextY;
-        }
-      }
-      document.getElementById("score").innerHTML = this.getScore();
+    let nextPosition = this.getNextPosition();
+    if (this.isPositionOverTail(nextPosition.x, nextPosition.y)) {
+      this.kill();
+      return;
     }
+
+    this.tail.unshift(createVector(nextPosition.x, nextPosition.y));
+    this.tail.pop();
+
+    field.updateScore(this.getScore());
   }
 
-  isValidMove(x, y) {
-    // debugger
-    /** if the piece is the head, after has moved, we must check here if collide with
-     * another piece of his own tail. We must do this here because if we do this when we 
-     * have updated the whole snake it could happen that the eaten piece has moved */
-    // if (index == 0) {
-    for (let [_i, _piece] of this.tail.entries()) {
-      /** check with indexs that we aren't comparing the same pieces of the tail */
-      if (_i != 0) {
-        if (_piece.x == x && _piece.y == y) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  trimTail(fromIndex) {
-    this.tail.splice(0, fromIndex)
-  }
-
-  kill() {
-    this.alive = false;
+  isPositionOverTail(x, y) {
+    return this.getTail().some(piece => piece.x == x && piece.y == y)
   }
 
   draw() {
@@ -162,7 +123,7 @@ class Snake {
 
       /** calculating the gradation of the green in the
         * head based on the age of the snake */
-      let tailGrad = 200 - (this.tail.length - index) * this.COLORBOUDING;
+      let tailGrad = 200 - (this.tail.length - index) * COLORAGINGMULTIPLIER;
       fill(34, tailGrad, 23);
       rect(_tailX, _tailY, SCALE, SCALE);
     }

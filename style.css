@@ -9,12 +9,14 @@ body {
   background: black;
   font-family: 'Roboto', sans-serif;
 }
+
 .score {
   position: absolute;
   color: white;
   left: calc( 100% / 2 - 4px);
   top: 6px;
 }
+
 .snakeField{
   position: relative;
 }

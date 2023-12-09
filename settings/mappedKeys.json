@@ -1,8 +1,0 @@
-{
-  "snake": {
-    "move_up": "w",
-    "move_down": "s",
-    "move_sx": "a",
-    "move_dx": "d"
-  }
-}
